@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Restaurante el Camarón de Oro - Cocina</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Contenedor global de notificaciones -->
+    <div id="toastContainer" class="toast-container"></div>
+    <h1>🍽️ Cocina - El Camarón de Oro</h1>
+
+    <!-- 🔐 Login -->
+    <section id="loginSection" class="card">
+      <h2>Iniciar sesión</h2>
+      <input type="email" id="emailInput" placeholder="Correo electrónico" />
+      <input type="password" id="passwordInput" placeholder="Contraseña" />
+      <button id="loginBtn">Entrar</button>
+    </section>
+
+    <!-- ✅ Vista de Cocina -->
+    <section id="cocinaSection" style="display: none;">
+      <!-- Barra de controles -->
+      <div id="topControls" class="top-controls">
+        <button id="activarSonidoBtn" class="btn-sonido">🔕 Activar sonido</button>
+      </div>
+
+      <div class="card">
+        <h2>Pedidos en preparación</h2>
+      </div>
+
+      <div id="listaPedidos" class="pedido-lista">
+        <!-- Pedidos renderizados por JS -->
+      </div>
+    </section>
+  </div>
+
+  <!-- Botón flotante cerrar sesión -->
+  <button id="logoutBtn" class="floating-btn">Cerrar sesión</button>
+
+  <script type="module" src="script-cocina.js"></script>
+</body>
+</html>
+
