@@ -520,8 +520,21 @@ setInterval(() => {
   });
 }, 30000);
 
+// -------------------- LOADER --------------------
+function mostrarLoader(texto = "Cargando...") {
+  const loader = document.getElementById("loaderOverlay");
+  const textoLoader = document.getElementById("loaderTexto");
 
-// 👁️ Manejo de sesión
+  if (loader) loader.style.display = "flex";
+  if (textoLoader) textoLoader.textContent = texto;
+}
+
+function ocultarLoader() {
+  const loader = document.getElementById("loaderOverlay");
+  if (loader) loader.style.display = "none";
+}
+
+// -------------------- UI --------------------
 function actualizarUI(user) {
   if (user) {
     loginSection.style.display = "none";
@@ -536,33 +549,54 @@ function actualizarUI(user) {
   }
 }
 
+// -------------------- AUTH STATE --------------------
 onAuthStateChanged(auth, (user) => {
   if (user) {
+    mostrarLoader("Validando acceso...");
+
     const rolRef = ref(db, "roles/" + user.uid);
-    get(rolRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        if (snapshot.val() === "cocina") {
-          actualizarUI(user);
-          showToast("👨‍🍳 Bienvenido al panel de cocina", "success");
+
+    get(rolRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          if (snapshot.val() === "cocina") {
+            actualizarUI(user);
+            showToast("👨‍🍳 Bienvenido al panel de cocina", "success");
+          } else {
+            showToast("🚫 Acceso denegado: No tienes el rol de cocina.", "error");
+            signOut(auth);
+          }
         } else {
-          showToast("🚫 Acceso denegado: No tienes el rol de cocina.", "error");
+          showToast("❌ No se encontró tu rol.", "error");
           signOut(auth);
         }
-      } else {
-        showToast("❌ No se encontró tu rol.", "error");
-        signOut(auth);
-      }
-    });
-  } else actualizarUI(null);
+      })
+      .catch((error) => {
+        console.error(error);
+        showToast("❌ Error al validar usuario", "error");
+      })
+      .finally(() => {
+        ocultarLoader();
+      });
+
+  } else {
+    actualizarUI(null);
+  }
 });
 
+// -------------------- LOGIN --------------------
 loginBtn.addEventListener("click", () => {
   const email = emailInput.value.trim();
   const password = passwordInput.value;
+
   if (!email || !password) {
-    showToast("⚠️ Ingresa correo y contraseña.", "info");
+    showToast("⚠️ Ingresa correo y contraseña.", "error");
     return;
   }
+
+  mostrarLoader("Iniciando sesión...");
+  loginBtn.disabled = true;
+
   signInWithEmailAndPassword(auth, email, password)
     .then(() => {
       showToast("✅ Sesión iniciada correctamente", "success");
@@ -570,16 +604,31 @@ loginBtn.addEventListener("click", () => {
       passwordInput.value = "";
     })
     .catch((error) => {
-      showToast("❌ Error de autenticación: " + error.message, "error");
+      console.error(error);
+      showToast("❌ Credenciales incorrectas", "error");
+    })
+    .finally(() => {
+      ocultarLoader();
+      loginBtn.disabled = false;
     });
 });
 
+// -------------------- LOGOUT --------------------
 logoutBtn.addEventListener("click", () => {
-  signOut(auth)
-    .then(() => showToast("✅ Sesión cerrada", "success"))
-    .catch((error) => showToast("❌ Error al cerrar sesión: " + error.message, "error"));
-});
+  mostrarLoader("Cerrando sesión...");
 
+  signOut(auth)
+    .then(() => {
+      showToast("✅ Sesión cerrada", "success");
+    })
+    .catch((error) => {
+      console.error(error);
+      showToast("❌ Error al cerrar sesión", "error");
+    })
+    .finally(() => {
+      ocultarLoader();
+    });
+});
 // 🧱 Crea botón de sonido
 function ensureTopControls() {
   if (!document.getElementById("activarSonidoBtn")) {
